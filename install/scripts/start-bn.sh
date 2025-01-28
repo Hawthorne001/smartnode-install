@@ -69,7 +69,6 @@ if [ "$CC_CLIENT" = "lighthouse" ]; then
         --eth1-blocks-per-log-query 150 \
         --disable-upnp \
         --staking \
-        --http-allow-sync-stalled \
         --execution-jwt=/secrets/jwtsecret \
         --quic-port ${BN_P2P_QUIC_PORT:-8001} \
         --historic-state-cache-size 2 \
@@ -78,7 +77,7 @@ if [ "$CC_CLIENT" = "lighthouse" ]; then
     # Performance tuning for ARM systems
     UNAME_VAL=$(uname -m)
     if [ "$UNAME_VAL" = "arm64" ] || [ "$UNAME_VAL" = "aarch64" ]; then
-        CMD="$CMD --execution-timeout-multiplier 2 --disable-lock-timeouts"
+        CMD="$CMD --execution-timeout-multiplier 2"
     fi
 
     if [ ! -z "$MEV_BOOST_URL" ]; then
@@ -173,6 +172,7 @@ if [ "$CC_CLIENT" = "nimbus" ]; then
         --data-dir=/ethclient/nimbus \
         --tcp-port=$BN_P2P_PORT \
         --udp-port=$BN_P2P_PORT \
+        --suggested-gas-limit=$BN_SUGGESTED_BLOCK_GAS_LIMIT \
         --web3-url=$EC_ENGINE_ENDPOINT \
         --rest \
         --rest-address=0.0.0.0 \
@@ -212,7 +212,7 @@ if [ "$CC_CLIENT" = "prysm" ]; then
         echo "Prysm is configured to use Holesky, genesis state required."
         if [ ! -f "/ethclient/holesky-genesis.ssz" ]; then
             echo "Downloading from Github..."
-            wget https://github.com/eth-clients/holesky/raw/main/custom_config_data/genesis.ssz -O /ethclient/holesky-genesis.ssz
+            wget https://github.com/eth-clients/holesky/blob/main/metadata/genesis.ssz -O /ethclient/holesky-genesis.ssz
             echo "Download complete."
         else
             echo "Genesis state already downloaded, continuing."
@@ -231,9 +231,10 @@ if [ "$CC_CLIENT" = "prysm" ]; then
         --rpc-port ${BN_RPC_PORT:-5053} \
         --grpc-gateway-host 0.0.0.0 \
         --grpc-gateway-port ${BN_API_PORT:-5052} \
+        --p2p-quic-port ${BN_P2P_QUIC_PORT:-8001} \
         --eth1-header-req-limit 150 \
         --jwt-secret=/secrets/jwtsecret \
-        --api-timeout 600 \
+        --api-timeout 20s \
         --enable-experimental-backfill \
         $BN_ADDITIONAL_FLAGS"
 
@@ -270,6 +271,7 @@ if [ "$CC_CLIENT" = "teku" ]; then
         --network=$TEKU_NETWORK \
         --data-path=/ethclient/teku \
         --p2p-port=$BN_P2P_PORT \
+        --validators-builder-registration-default-gas-limit=$BN_SUGGESTED_BLOCK_GAS_LIMIT \
         --ee-endpoint=$EC_ENGINE_ENDPOINT \
         --rest-api-enabled \
         --rest-api-interface=0.0.0.0 \

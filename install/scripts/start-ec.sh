@@ -81,6 +81,7 @@ if [ "$CLIENT" = "geth" ]; then
             --http.port ${EC_HTTP_PORT:-8545} \
             --http.api eth,net,web3 \
             --http.corsdomain=* \
+            --miner.gaslimit $EC_SUGGESTED_BLOCK_GAS_LIMIT \
             --ws \
             --ws.addr 0.0.0.0 \
             --ws.port ${EC_WS_PORT:-8546} \
@@ -163,7 +164,8 @@ if [ "$CLIENT" = "nethermind" ]; then
     CMD="$PERF_PREFIX $NETHERMIND_BINARY \
         --config $RP_NETHERMIND_NETWORK \
         --Sync.SnapSync true \
-        --datadir /ethclient/nethermind \
+        --data-dir /ethclient/nethermind \
+        --Blocks.TargetBlockGasLimit $EC_SUGGESTED_BLOCK_GAS_LIMIT \
         --JsonRpc.Enabled true \
         --JsonRpc.Host 0.0.0.0 \
         --JsonRpc.Port ${EC_HTTP_PORT:-8545} \
@@ -175,7 +177,7 @@ if [ "$CLIENT" = "nethermind" ]; then
         --Pruning.FullPruningTrigger=VolumeFreeSpace \
         --Pruning.FullPruningThresholdMb=$RP_NETHERMIND_FULL_PRUNING_THRESHOLD_MB \
         --Pruning.FullPruningCompletionBehavior AlwaysShutdown \
-        --Pruning.FullPruningMaxDegreeOfParallelism 0 \
+        --Pruning.FullPruningMaxDegreeOfParallelism=$RP_NETHERMIND_FULL_PRUNING_MAX_DEGREE_PARALLELISM \
         --Pruning.FullPruningMemoryBudgetMb=$RP_NETHERMIND_FULL_PRUNE_MEMORY_BUDGET \
         $EC_ADDITIONAL_FLAGS"
 
@@ -240,7 +242,7 @@ if [ "$CLIENT" = "besu" ]; then
     # Check for the prune flag and run that first if requested
     if [ -f "/ethclient/prune.lock" ]; then
 
-        $PERF_PREFIX /opt/besu/bin/besu $BESU_NETWORK --data-path=/ethclient/besu storage x-trie-log prune ; rm /ethclient/prune.lock
+        $PERF_PREFIX /opt/besu/bin/besu $BESU_NETWORK --data-path=/ethclient/besu storage trie-log prune ; rm /ethclient/prune.lock
 
     # Run Besu normally
     else
@@ -249,6 +251,7 @@ if [ "$CLIENT" = "besu" ]; then
             $BESU_NETWORK \
             --data-path=/ethclient/besu \
             --fast-sync-min-peers=3 \
+            --target-gas-limit $EC_SUGGESTED_BLOCK_GAS_LIMIT \
             --rpc-http-enabled \
             --rpc-http-host=0.0.0.0 \
             --rpc-http-port=${EC_HTTP_PORT:-8545} \
@@ -263,7 +266,7 @@ if [ "$CLIENT" = "besu" ]; then
             --engine-rpc-port=${EC_ENGINE_PORT:-8551} \
             --engine-host-allowlist=* \
             --engine-jwt-secret=/secrets/jwtsecret \
-            --Xsnapsync-synchronizer-flat-db-healing-enabled=true \
+            --Xbonsai-full-flat-db-enabled=true \
             $EC_ADDITIONAL_FLAGS"
 
         if [ "$BESU_ARCHIVE_MODE" = "true" ]; then
@@ -315,6 +318,7 @@ if [ "$CLIENT" = "reth" ]; then
         --http.port ${EC_HTTP_PORT:-8545} \
         --http.api eth,net,web3 \
         --http.corsdomain="*" \
+        --builder.gaslimit $EC_SUGGESTED_BLOCK_GAS_LIMIT \
         --ws \
         --ws.addr 0.0.0.0 \
         --ws.port ${EC_WS_PORT:-8546} \
@@ -329,8 +333,16 @@ if [ "$CLIENT" = "reth" ]; then
         CMD="$CMD --metrics 0.0.0.0:$EC_METRICS_PORT"
     fi
 
-    if [ "$RETH_ARCHIVE_NODE" = "false" ]; then
+    if [ "$RETH_ARCHIVE_MODE" = "false" ]; then
         CMD="$CMD --full"
+    fi
+
+    if [ ! -z "$EC_MAX_PEERS" ]; then
+        CMD="$CMD --max-outbound-peers=$EC_MAX_PEERS"
+    fi
+
+    if [ ! -z "$RETH_MAX_INBOUND_PEERS" ]; then
+        CMD="$CMD --max-inbound-peers=$RETH_MAX_INBOUND_PEERS"
     fi
 
     if [ ! -z "$EC_P2P_PORT" ]; then

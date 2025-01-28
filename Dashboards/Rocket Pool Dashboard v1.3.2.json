@@ -610,7 +610,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(vc_signed_attestations_total{job=\"validator\", status=\"success\"}) OR # Lighthouse\nsum(vc_published_attestations_total{job=\"validator\"}) OR # Lodestar\nsum(beacon_attestations_sent_total{job=\"validator\"}) OR # Nimbus\nsum(validator_successful_attestations{job=\"validator\"}) OR # Prysm\nvalidator_duties_performed{job=\"validator\", type=\"attestation\", result=\"success\"} OR # Teku\non() vector(0)",
+          "expr": "sum(vc_signed_attestations_total{job=\"validator\", status=\"success\"}) OR # Lighthouse\nsum(vc_published_attestations_total{job=\"validator\"}) OR # Lodestar\nsum(beacon_attestations_sent_total{job=\"validator\"}) OR # Nimbus\nsum(validator_successful_attestations{job=\"validator\"}) OR # Prysm\nvalidator_duties_performed_total{job=\"validator\", type=\"attestation\", result=\"success\"} OR # Teku\non() vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "Attestations",
@@ -624,7 +624,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(vc_signed_beacon_blocks_total{job=\"validator\", status=\"success\"}) OR # Lighthouse\nsum(vc_block_published_total{job=\"validator\"}) OR # Lodestar\nsum(beacon_blocks_sent_total{job=\"validator\"}) OR # Nimbus\nsum(validator_successful_proposals{job=\"validator\"}) OR # Prysm\nvalidator_duties_performed{job=\"validator\", type=\"block\", result=\"success\"} OR # Teku\non() vector(0)",
+          "expr": "sum(vc_signed_beacon_blocks_total{job=\"validator\", status=\"success\"}) OR # Lighthouse\nsum(vc_block_published_total{job=\"validator\"}) OR # Lodestar\nsum(beacon_blocks_sent_total{job=\"validator\"}) OR # Nimbus\nsum(validator_successful_proposals{job=\"validator\"}) OR # Prysm\nvalidator_duties_performed_total{job=\"validator\", type=\"block\", result=\"success\"} OR # Teku\non() vector(0)",
           "interval": "",
           "legendFormat": "Proposals",
           "range": true,
@@ -5289,8 +5289,8 @@
     ]
   },
   "timezone": "",
-  "title": "Rocket Pool Dashboard v1.3.1",
-  "uid": "Ur22GG77z131",
+  "title": "Rocket Pool Dashboard v1.3.2",
+  "uid": "Ur22GG77z132",
   "version": 20,
   "weekStart": ""
 }
